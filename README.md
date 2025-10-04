@@ -34,8 +34,7 @@ netdata/
 ├── netdata/
 │   └── netdata.conf         # Configurações customizadas do Netdata
 ├── nginx/
-│   ├── nginx.conf           # Configuração do Nginx (reverse proxy)
-│   └── entrypoint.sh        # Script que gera .htpasswd automaticamente
+│   └── entrypoint.sh        # Gera nginx.conf e .htpasswd automaticamente
 ├── COOLIFY-SETUP.md         # Guia completo para Coolify
 ├── INSTALACAO-RAPIDA.md     # Guia rápido de instalação
 └── README.md                # Este arquivo

@@ -216,12 +216,13 @@ Agora, todo `git push` vai fazer deploy automático! 🎉
         ├── netdata/
         │   └── netdata.conf
         ├── nginx/
-        │   ├── nginx.conf
-        │   └── .htpasswd  ← Criar este manualmente
+        │   └── entrypoint.sh  ← Gera configurações automaticamente
         └── volumes/
             ├── netdata_lib/
             └── netdata_cache/
 ```
+
+**Nota:** Os arquivos `nginx.conf` e `.htpasswd` são gerados automaticamente pelo entrypoint durante a inicialização do container!
 
 ## 🎯 Checklist Final
 

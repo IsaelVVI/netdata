@@ -32,8 +32,7 @@ services:
       - "19999:80"  # Coolify vai detectar esta porta e criar o domínio
     restart: unless-stopped
     volumes:
-      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
-      - ./nginx/entrypoint.sh:/docker-entrypoint.d/40-generate-htpasswd.sh:ro
+      - ./nginx/entrypoint.sh:/docker-entrypoint.d/40-setup-auth.sh:ro
     environment:
       - NETDATA_USER=${NETDATA_USER:-admin}
       - NETDATA_PASSWORD=${NETDATA_PASSWORD}
