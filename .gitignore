@@ -1,0 +1,15 @@
+# Arquivo de senhas do Nginx - NUNCA commitar!
+nginx/.htpasswd
+
+# Volumes do Docker
+netdata_lib/
+netdata_cache/
+
+# Logs
+*.log
+
+# Arquivos temporários
+*.tmp
+*.swp
+*~
+

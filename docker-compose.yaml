@@ -3,9 +3,6 @@ version: '3.7'
 services:
   netdata:
     image: netdata/netdata:v1.47.4
-    container_name: netdata
-    ports:
-      - "19999:19999"  # Expose Netdata UI on port 19999
     restart: unless-stopped
     cap_add:
       - SYS_PTRACE  # Required for monitoring
@@ -21,11 +18,37 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock  # Docker socket for container metrics
     environment:
       - DOCKER_HOST=unix:///var/run/docker.sock  # Set Docker socket for container names
+    networks:
+      - netdata-network
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:19999"]
       interval: 30s
       timeout: 10s
       retries: 5
+
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "19999:80"  # Coolify vai detectar esta porta e criar o domínio
+    restart: unless-stopped
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/.htpasswd:/etc/nginx/.htpasswd:ro
+    depends_on:
+      - netdata
+    networks:
+      - netdata-network
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:80"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    labels:
+      - "coolify.managed=true"
+
+networks:
+  netdata-network:
+    driver: bridge
 
 volumes:
   netdata_lib:
