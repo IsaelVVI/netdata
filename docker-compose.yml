@@ -1,0 +1,32 @@
+version: '3.7'
+
+services:
+  netdata:
+    image: netdata/netdata:v1.47.4
+    container_name: netdata
+    ports:
+      - "19999:19999"  # Expose Netdata UI on port 19999
+    restart: unless-stopped
+    cap_add:
+      - SYS_PTRACE  # Required for monitoring
+    security_opt:
+      - apparmor=unconfined  # Allow more permissions for Netdata monitoring
+    volumes:
+      - ./netdata/config:/etc/netdata  # Custom configuration files from your repo
+      - netdata_lib:/var/lib/netdata  # Persistent storage for historical data
+      - netdata_cache:/var/cache/netdata  # Cache directory for faster performance
+      - /proc:/host/proc:ro  # System metrics
+      - /sys:/host/sys:ro
+      - /etc/os-release:/host/etc/os-release:ro
+      - /var/run/docker.sock:/var/run/docker.sock  # Docker socket for container metrics
+    environment:
+      - DOCKER_HOST=unix:///var/run/docker.sock  # Set Docker socket for container names
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:19999"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+volumes:
+  netdata_lib:
+  netdata_cache:
