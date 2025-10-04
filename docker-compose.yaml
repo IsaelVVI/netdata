@@ -29,22 +29,24 @@ services:
   nginx:
     image: nginx:alpine
     ports:
-      - "19999:80"  # Coolify vai detectar esta porta e criar o domínio
+      - "19999:80"  # Expõe na porta 19999 do host
     restart: unless-stopped
     volumes:
-      - ./nginx/entrypoint.sh:/docker-entrypoint.d/40-setup-auth.sh:ro
+      - ./nginx/entrypoint.sh:/setup-auth.sh:ro
     environment:
       - NETDATA_USER=${NETDATA_USER:-admin}
       - NETDATA_PASSWORD=${NETDATA_PASSWORD}
+    command: sh -c "chmod +x /setup-auth.sh && /setup-auth.sh && nginx -g 'daemon off;'"
     depends_on:
       - netdata
     networks:
       - netdata-network
     healthcheck:
-      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:80"]
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:80/"]
       interval: 30s
       timeout: 10s
       retries: 3
+      start_period: 10s
     labels:
       - "coolify.managed=true"
 

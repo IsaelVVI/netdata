@@ -49,11 +49,15 @@ A autenticação é feita através de **variáveis de ambiente** no Coolify. Sup
 2. **Docker Compose Location:** Deixe como `docker-compose.yaml` (se estiver na raiz)
 3. **Base Directory:** `/` (raiz do repositório)
 
-### 2.3. Configurar Rede e Domínio
+### 2.3. Configurar Porta e Domínio
 
-**Importante:** O Coolify vai detectar a porta `19999` do nginx.
+**Importante:** O serviço escuta na porta **19999** do host.
 
-Você tem duas opções:
+⚠️ **No Coolify, configure a porta corretamente:**
+- Na seção **Ports**, certifique-se de que está mapeado `19999:80`
+- Isso significa: porta 19999 externa → porta 80 interna do container
+
+Você tem duas opções de acesso:
 
 #### Opção 1: Com Domínio Público (Recomendado)
 
@@ -72,8 +76,14 @@ Você tem duas opções:
 #### Opção 2: Sem Domínio (Acesso via IP:Porta)
 
 1. Deixe a seção **Domains** vazia
-2. O Coolify vai expor na porta `19999`
-3. Acesse via: `http://IP-DO-VPS:19999`
+2. Certifique-se de que a porta está configurada como `19999`
+3. Abra a porta no firewall (se necessário):
+   ```bash
+   sudo ufw allow 19999/tcp
+   ```
+4. Acesse via: `http://IP-DO-VPS:19999`
+
+**⚠️ IMPORTANTE:** Acesse na porta **19999**, NÃO na porta 80!
 
 ### 2.4. Configurações Adicionais (Opcional)
 
@@ -96,6 +106,27 @@ Você tem duas opções:
    - `netdata` - Status: Running
    - `nginx` - Status: Running
 
+### Verificar Logs (IMPORTANTE!)
+
+Antes de acessar, verifique os logs do nginx:
+
+```bash
+# Ver logs do container nginx
+docker logs [nginx-container-id]
+```
+
+Você deve ver:
+```
+🔧 Configurando Netdata com autenticação...
+📦 Instalando apache2-utils...
+🔐 Gerando arquivo de autenticação...
+📝 Gerando configuração do Nginx...
+✅ Autenticação configurada para o usuário: admin
+🚀 Nginx configurado e pronto para iniciar!
+```
+
+Se NÃO ver essas mensagens, o script não rodou!
+
 ### Acessar o Dashboard
 
 **Com Domínio:**
@@ -108,11 +139,72 @@ https://netdata.seudominio.com
 http://IP-DO-VPS:19999
 ```
 
-Uma tela de login vai aparecer pedindo:
-- **Usuário:** O que você definiu no htpasswd
-- **Senha:** A senha que você definiu
+**⚠️ Use a porta 19999, não 80!**
+
+### Como Saber se a Autenticação Está Funcionando
+
+✅ **Funcionando:** Aparece uma janela popup pedindo:
+   - Usuário
+   - Senha
+
+❌ **NÃO funcionando:** Dashboard abre direto sem pedir senha
+
+Se abrir sem senha:
+1. Verifique os logs do nginx
+2. Verifique se as variáveis `NETDATA_USER` e `NETDATA_PASSWORD` estão definidas
+3. Reinicie o container: `docker restart [nginx-container]`
 
 ## 🔧 Troubleshooting no Coolify
+
+### ⚠️ Problema: Acessando SEM SENHA
+
+**Sintoma:** O dashboard abre direto sem pedir usuário/senha
+
+**Causas possíveis:**
+1. Variáveis de ambiente não configuradas
+2. Script de setup não rodou
+3. Configuração do nginx não foi gerada
+
+**Solução passo a passo:**
+
+```bash
+# 1. Verificar se as variáveis estão definidas
+docker exec [nginx-container-id] env | grep NETDATA
+
+# Deve mostrar:
+# NETDATA_USER=admin
+# NETDATA_PASSWORD=sua-senha
+
+# 2. Verificar logs do nginx
+docker logs [nginx-container-id]
+
+# Deve mostrar as mensagens de "Configurando..." e "✅ Autenticação configurada"
+
+# 3. Verificar se .htpasswd foi criado
+docker exec [nginx-container-id] cat /etc/nginx/.htpasswd
+
+# Deve mostrar: admin:$2y$...hash...
+
+# 4. Verificar configuração do nginx
+docker exec [nginx-container-id] cat /etc/nginx/nginx.conf | grep auth_basic
+
+# Deve mostrar:
+#   auth_basic "Área Restrita - Netdata";
+#   auth_basic_user_file /etc/nginx/.htpasswd;
+```
+
+Se algum desses não funcionar:
+1. Adicione/verifique as variáveis no Coolify
+2. Faça **Restart** do serviço
+3. Verifique os logs novamente
+
+### ⚠️ Problema: Acessando na PORTA 80 em vez de 19999
+
+**Sintoma:** URL está como `http://ip:80` ou só `http://ip`
+
+**Solução:**
+- Acesse na porta correta: `http://IP-DO-VPS:19999`
+- No Coolify, verifique se a porta está mapeada como `19999:80`
 
 ### Erro: "NETDATA_PASSWORD não está definida"
 
