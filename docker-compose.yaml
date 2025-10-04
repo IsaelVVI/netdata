@@ -25,6 +25,8 @@ services:
       interval: 30s
       timeout: 10s
       retries: 5
+    labels:
+      - "coolify.managed=false"  # Não expor este serviço
 
   nginx:
     image: nginx:alpine
@@ -73,7 +75,7 @@ services:
       retries: 3
       start_period: 10s
     labels:
-      - "coolify.managed=true"
+      - "coolify.managed=true"  # Este é o serviço principal a ser exposto
 
 networks:
   netdata-network:
