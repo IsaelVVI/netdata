@@ -32,11 +32,11 @@ services:
       - "19999:80"  # Expõe na porta 19999 do host
     restart: unless-stopped
     volumes:
-      - ./nginx/entrypoint.sh:/setup-auth.sh:ro
+      - ./nginx/entrypoint.sh:/setup-auth.sh
     environment:
       - NETDATA_USER=${NETDATA_USER:-admin}
       - NETDATA_PASSWORD=${NETDATA_PASSWORD}
-    command: sh -c "chmod +x /setup-auth.sh && /setup-auth.sh && nginx -g 'daemon off;'"
+    command: sh -c "sh /setup-auth.sh && nginx -g 'daemon off;'"
     depends_on:
       - netdata
     networks:
