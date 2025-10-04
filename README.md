@@ -28,15 +28,17 @@ Antes de começar, certifique-se de ter instalado:
 
 ```
 netdata/
-├── docker-compose.yaml     # Configuração principal do Docker
+├── docker-compose.yaml       # Configuração principal do Docker
+├── env.example               # Exemplo de variáveis de ambiente
+├── .env                      # Suas credenciais (criar a partir do exemplo)
 ├── netdata/
-│   └── netdata.conf       # Configurações customizadas do Netdata
+│   └── netdata.conf         # Configurações customizadas do Netdata
 ├── nginx/
-│   ├── nginx.conf         # Configuração do Nginx (reverse proxy)
-│   └── .htpasswd          # Arquivo de senhas (gerado por você)
-├── setup-auth.sh          # Script para configurar autenticação (Linux)
-├── setup-auth.ps1         # Script para configurar autenticação (Windows)
-└── README.md              # Este arquivo
+│   ├── nginx.conf           # Configuração do Nginx (reverse proxy)
+│   └── entrypoint.sh        # Script que gera .htpasswd automaticamente
+├── COOLIFY-SETUP.md         # Guia completo para Coolify
+├── INSTALACAO-RAPIDA.md     # Guia rápido de instalação
+└── README.md                # Este arquivo
 ```
 
 ## ⚙️ Configuração
@@ -65,41 +67,41 @@ O arquivo `netdata/netdata.conf` inclui otimizações para:
 
 ## 🔐 Configuração de Segurança (IMPORTANTE!)
 
-Este projeto está configurado com **autenticação obrigatória** usando Nginx. Você precisa configurar usuário e senha antes de iniciar.
+Este projeto está configurado com **autenticação obrigatória** usando Nginx. A senha é definida através de **variáveis de ambiente** no arquivo `.env`.
 
-> 💡 **Para usuários do Coolify:** Siga as instruções específicas no [COOLIFY-SETUP.md](COOLIFY-SETUP.md) que explica como configurar a autenticação diretamente no servidor antes do deploy.
+> 💡 **Para usuários do Coolify:** Siga as instruções específicas no [COOLIFY-SETUP.md](COOLIFY-SETUP.md) - você pode definir as variáveis direto no painel!
 
 ### Configurar Autenticação
 
-#### No Linux/VPS (Recomendado):
+#### Método 1: Arquivo .env (Uso Local)
 
 ```bash
-# Tornar o script executável
-chmod +x setup-auth.sh
+# 1. Copiar o arquivo de exemplo
+cp env.example .env
 
-# Executar o script
-./setup-auth.sh
+# 2. Editar o arquivo .env e definir suas credenciais
+nano .env
 ```
 
-O script irá:
-1. Solicitar um nome de usuário
-2. Solicitar uma senha (será digitada de forma segura)
-3. Criar o arquivo `nginx/.htpasswd` com suas credenciais
-
-#### No Windows (PowerShell):
-
-```powershell
-.\setup-auth.ps1
-```
-
-#### Método Manual (se os scripts não funcionarem):
-
+Conteúdo do arquivo `.env`:
 ```bash
-# Usando Docker (funciona em qualquer sistema)
-docker run --rm -i httpd:alpine htpasswd -nbB seu-usuario sua-senha > nginx/.htpasswd
+# Usuário para acessar o Netdata
+NETDATA_USER=admin
+
+# Senha para acessar o Netdata (USE UMA SENHA FORTE!)
+NETDATA_PASSWORD=MinhaSenh@Fort3_123
 ```
 
-Substitua `seu-usuario` e `sua-senha` pelas suas credenciais.
+#### Método 2: Variáveis de Ambiente no Coolify (Recomendado)
+
+No painel do Coolify:
+1. Vá em **Environment Variables**
+2. Adicione:
+   - `NETDATA_USER` = `admin` (ou seu usuário preferido)
+   - `NETDATA_PASSWORD` = `sua-senha-forte`
+3. Salve e faça o deploy
+
+**⚠️ NUNCA commite o arquivo `.env` com senhas reais no Git!**
 
 ## 🎯 Como Usar
 

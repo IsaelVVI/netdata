@@ -10,51 +10,29 @@ Este guia explica como fazer deploy do Netdata protegido por senha usando **Cool
 
 ## 🔐 Passo 1: Configurar Autenticação
 
-**⚠️ IMPORTANTE:** Você precisa criar o arquivo de senhas **ANTES** do deploy!
+A autenticação é feita através de **variáveis de ambiente** no Coolify. Super simples! 🎉
 
-### Opção A: Via SSH no VPS (Recomendado)
+### No Painel do Coolify:
 
-```bash
-# 1. Conectar no VPS via SSH
-ssh seu-usuario@ip-do-vps
+1. Acesse seu projeto no Coolify
+2. Vá na aba **Environment Variables** (ou **Settings**)
+3. Adicione as seguintes variáveis:
 
-# 2. Navegar até o diretório do projeto no Coolify
-# O caminho geralmente é algo como:
-cd /data/coolify/applications/[seu-projeto-id]
+| Variável | Valor | Exemplo |
+|----------|-------|---------|
+| `NETDATA_USER` | Seu usuário de login | `admin` |
+| `NETDATA_PASSWORD` | Sua senha forte | `Netd@t@2024!Segura` |
 
-# 3. Criar o diretório nginx se não existir
-mkdir -p nginx
+4. Clique em **Save**
 
-# 4. Criar o arquivo de senha
-docker run --rm -i httpd:alpine htpasswd -nbB seu-usuario sua-senha > nginx/.htpasswd
+**✅ Pronto!** Não precisa criar arquivos manualmente ou usar SSH!
 
-# Exemplo:
-# docker run --rm -i httpd:alpine htpasswd -nbB admin MinhaSenh@123 > nginx/.htpasswd
+**💡 Dica de Segurança:** Use senhas fortes como:
+- ✅ `Admin2024!@Netdata`
+- ✅ `Monitor#Seguro$2024`
+- ❌ `123456` ou `admin`
 
-# 5. Verificar se foi criado
-cat nginx/.htpasswd
-```
-
-### Opção B: Criar no Repositório (Antes do Push)
-
-**No seu computador local:**
-
-```bash
-# 1. Criar o arquivo de senha
-docker run --rm -i httpd:alpine htpasswd -nbB seu-usuario sua-senha > nginx/.htpasswd
-
-# 2. Commitar (o .gitignore já está configurado para não subir para o git público)
-# MAS se seu repo é PRIVADO, você pode commitar:
-git add nginx/.htpasswd
-git commit -m "Add authentication"
-git push
-
-# ⚠️ Se o repo for PÚBLICO, NÃO faça commit deste arquivo!
-```
-
-### Opção C: Via GitHub Actions ou Secrets
-
-Você também pode usar GitHub Secrets para gerar o arquivo durante o deploy, mas isso é mais avançado.
+---
 
 ## 🎯 Passo 2: Deploy no Coolify
 
@@ -136,20 +114,14 @@ Uma tela de login vai aparecer pedindo:
 
 ## 🔧 Troubleshooting no Coolify
 
-### Erro: "nginx/.htpasswd: no such file or directory"
+### Erro: "NETDATA_PASSWORD não está definida"
 
-O arquivo de senha não foi criado antes do deploy.
+As variáveis de ambiente não foram configuradas no Coolify.
 
 **Solução:**
-```bash
-# Conectar via SSH no VPS
-cd /data/coolify/applications/[seu-projeto-id]
-mkdir -p nginx
-docker run --rm -i httpd:alpine htpasswd -nbB admin senha123 > nginx/.htpasswd
-
-# Reiniciar no Coolify
-# Vá no painel do Coolify e clique em "Restart"
-```
+1. Vá em **Environment Variables** no painel
+2. Adicione `NETDATA_USER` e `NETDATA_PASSWORD`
+3. Clique em **Restart** ou **Redeploy**
 
 ### Containers não iniciam
 
@@ -178,14 +150,14 @@ docker exec [nginx-container-id] wget -O- http://netdata:19999
 
 ### Trocar a Senha
 
-```bash
-# Via SSH no VPS
-cd /data/coolify/applications/[seu-projeto-id]
-rm nginx/.htpasswd
-docker run --rm -i httpd:alpine htpasswd -nbB novo-usuario nova-senha > nginx/.htpasswd
+Super fácil!
 
-# Reiniciar apenas o nginx no Coolify
-```
+1. No painel do Coolify, vá em **Environment Variables**
+2. Altere o valor de `NETDATA_PASSWORD` (e/ou `NETDATA_USER`)
+3. Clique em **Save**
+4. Clique em **Restart**
+
+**✅ Pronto!** A nova senha já está ativa.
 
 ## 🔒 Segurança no Coolify
 
@@ -253,7 +225,7 @@ Agora, todo `git push` vai fazer deploy automático! 🎉
 
 ## 🎯 Checklist Final
 
-- [ ] Arquivo `nginx/.htpasswd` criado no servidor
+- [ ] Variáveis `NETDATA_USER` e `NETDATA_PASSWORD` configuradas no Coolify
 - [ ] Build Pack configurado como "Docker Compose"
 - [ ] Deploy realizado com sucesso (logs verdes)
 - [ ] 2 containers rodando (netdata + nginx)

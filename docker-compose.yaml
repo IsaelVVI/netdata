@@ -33,7 +33,10 @@ services:
     restart: unless-stopped
     volumes:
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
-      - ./nginx/.htpasswd:/etc/nginx/.htpasswd:ro
+      - ./nginx/entrypoint.sh:/docker-entrypoint.d/40-generate-htpasswd.sh:ro
+    environment:
+      - NETDATA_USER=${NETDATA_USER:-admin}
+      - NETDATA_PASSWORD=${NETDATA_PASSWORD}
     depends_on:
       - netdata
     networks:

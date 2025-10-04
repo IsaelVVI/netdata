@@ -1,6 +1,9 @@
 # Arquivo de senhas do Nginx - NUNCA commitar!
 nginx/.htpasswd
 
+# Variáveis de ambiente com senhas - NUNCA commitar!
+.env
+
 # Volumes do Docker
 netdata_lib/
 netdata_cache/
