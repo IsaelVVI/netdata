@@ -15,7 +15,7 @@ services:
       - /proc:/host/proc:ro  # System metrics
       - /sys:/host/sys:ro
       - /etc/os-release:/host/etc/os-release:ro
-      - /var/run/docker.sock:/var/run/docker.sock  # Docker socket for container metrics
+      - /var/run/docker.sock:/var/run/docker.sock:ro  # Docker socket for container metrics
     environment:
       - DOCKER_HOST=unix:///var/run/docker.sock  # Set Docker socket for container names
     networks:
