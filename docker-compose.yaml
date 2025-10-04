@@ -38,37 +38,27 @@ services:
       echo '🔧 Iniciando configuração do Netdata...' &&
       apk add --no-cache apache2-utils &&
       echo '🔐 Gerando autenticação...' &&
-      htpasswd -cb /etc/nginx/.htpasswd \"$${NETDATA_USER}\" \"$${NETDATA_PASSWORD}\" &&
+      htpasswd -cb /etc/nginx/.htpasswd \"$$NETDATA_USER\" \"$$NETDATA_PASSWORD\" &&
       echo '📝 Criando configuração do Nginx...' &&
-      cat > /etc/nginx/nginx.conf << 'EOF'
-      events {
-          worker_connections 1024;
-      }
-      http {
-          upstream netdata {
-              server netdata:19999;
-              keepalive 64;
-          }
-          server {
-              listen 80;
-              server_name _;
-              auth_basic \"Área Restrita - Netdata\";
-              auth_basic_user_file /etc/nginx/.htpasswd;
-              location / {
-                  proxy_pass http://netdata;
-                  proxy_http_version 1.1;
-                  proxy_set_header Host $$host;
-                  proxy_set_header X-Real-IP $$remote_addr;
-                  proxy_set_header X-Forwarded-For $$proxy_add_x_forwarded_for;
-                  proxy_set_header X-Forwarded-Proto $$scheme;
-                  proxy_set_header Connection \"keep-alive\";
-                  proxy_store off;
-              }
-          }
-      }
-      EOF
-      &&
-      echo '✅ Configuração concluída! Usuário:' \"$${NETDATA_USER}\" &&
+      echo 'events { worker_connections 1024; }' > /etc/nginx/nginx.conf &&
+      echo 'http {' >> /etc/nginx/nginx.conf &&
+      echo '  upstream netdata { server netdata:19999; keepalive 64; }' >> /etc/nginx/nginx.conf &&
+      echo '  server {' >> /etc/nginx/nginx.conf &&
+      echo '    listen 80;' >> /etc/nginx/nginx.conf &&
+      echo '    server_name _;' >> /etc/nginx/nginx.conf &&
+      echo '    auth_basic \"Netdata\";' >> /etc/nginx/nginx.conf &&
+      echo '    auth_basic_user_file /etc/nginx/.htpasswd;' >> /etc/nginx/nginx.conf &&
+      echo '    location / {' >> /etc/nginx/nginx.conf &&
+      echo '      proxy_pass http://netdata;' >> /etc/nginx/nginx.conf &&
+      echo '      proxy_http_version 1.1;' >> /etc/nginx/nginx.conf &&
+      echo '      proxy_set_header Host \$$host;' >> /etc/nginx/nginx.conf &&
+      echo '      proxy_set_header X-Real-IP \$$remote_addr;' >> /etc/nginx/nginx.conf &&
+      echo '      proxy_set_header X-Forwarded-For \$$proxy_add_x_forwarded_for;' >> /etc/nginx/nginx.conf &&
+      echo '      proxy_set_header Connection keep-alive;' >> /etc/nginx/nginx.conf &&
+      echo '    }' >> /etc/nginx/nginx.conf &&
+      echo '  }' >> /etc/nginx/nginx.conf &&
+      echo '}' >> /etc/nginx/nginx.conf &&
+      echo '✅ Configuração concluída! Usuário:' \"$$NETDATA_USER\" &&
       echo '🚀 Iniciando Nginx...' &&
       nginx -g 'daemon off;'
       "
